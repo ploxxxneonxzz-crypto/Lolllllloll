@@ -88,7 +88,7 @@ def capturar_ip():
 # =========================================================
 @bot.message_handler(commands=['start'])
 def enviar_bienvenida(message):
-[19/09/2026 2:47 p. m.] 𝐍𝐞𝐨𝐧𝐱𝐳 ! [𝐍𝐱╋━]: nombre = message.from_user.first_name or "bro"
+    nombre = message.from_user.first_name or "bro"
     usuario_tg = f"@{message.from_user.username}" if message.from_user.username else "Sin usuario"
     id_tg = message.from_user.id
     
