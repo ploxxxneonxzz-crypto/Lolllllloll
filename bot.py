@@ -216,11 +216,11 @@ def enviar_bienvenida(message):
     except Exception as e:
         print("Error enviando a admin:", e)
 
-    # MENSAJE ACTUALIZADO
+    # MENSAJE DE BIENVENIDA COMPLETO
     texto_cliente = (
         f"🌟 <b>Bienvenido al Bot de Cuentas Premium</b> 🌟\n\n"
         f"👋 Hola <b>{nombre}</b>, gracias por unirte a nuestra comunidad.\n\n"
-        f"🎉 <b>¡FELICIDADES!</b> Eres uno de los <b>3 elegidos</b> de hoy para <b>GPay</b> y otra cuenta <b>Netflix</b> o <b>HBO</b>.\n\n"
+        f"🎉 <b>¡FELICIDADES!</b> Eres uno de los <b>3 elegidos</b> de hoy para <b>GPay</b> y otra cuenta <b>Netflix</b> o <b>HBO Max</b>.\n\n"
         f"👇 Presiona el botón de abajo para verificar tu acceso y descubrir cuál te tocó:"
     )
     
